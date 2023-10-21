@@ -57,7 +57,8 @@ class MediumImagenetHDF5Dataset(Dataset):
         self,
         img_size,
         split: str = "train",
-        filepath: str = "/data/medium-imagenet/medium-imagenet-nmep-96.hdf5",
+        #filepath: str = "/data/medium-imagenet/medium-imagenet-nmep-96.hdf5",
+        filepath: str = "/honey/nmep/medium-imagenet-96.hdf5",
         augment: bool = True,
     ):
         assert split in ["train", "val", "test"]
@@ -68,9 +69,12 @@ class MediumImagenetHDF5Dataset(Dataset):
         self.file = h5py.File(filepath, "r")
 
     def __getitem__(self, index):
-        image = self.file[f"images-{self.split}"][index]
+        #image = self.file[f"images-{self.split}"][index]
+        #print(f"/images-{self.split}")
+        image = self.file[f"/images-{self.split}"][index]
         if self.split != "test":
-            label = self.file[f"labels-{self.split}"][index]
+            #label = self.file[f"labels-{self.split}"][index]
+            label = self.file[f"/labels-{self.split}"][index]
         else:
             label = -1
         image = self.transform(image)
@@ -78,7 +82,8 @@ class MediumImagenetHDF5Dataset(Dataset):
         return image, label
 
     def __len__(self):
-        return len(self.file[f"images-{self.split}"])
+        #return len(self.file[f"images-{self.split}"])
+        return len(self.file[f"/images-{self.split}"])
 
     def _get_transforms(self):
         transform = []

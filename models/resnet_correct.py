@@ -1,20 +1,18 @@
 """ResNet implementation taken from kuangliu on github
 link: https://github.com/kuangliu/pytorch-cifar/blob/master/models/resnet.py
-For Pre-activation ResNet, see 'preact_resnet.py'.
+For Pre-activation ResNet, see ‘preact_resnet.py’.
 Reference:
 [1] Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun
     Deep Residual Learning for Image Recognition. arXiv:1512.03385
 """
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-
 class ResNetBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
         """
         Create a residual block for our ResNet18 architecture.
-
         Here is the expected network structure:
         - conv layer with
             out_channels=out_channels, 3x3 kernel, stride=stride
@@ -30,70 +28,58 @@ class ResNetBlock(nn.Module):
                 - batchnorm layer (Batchnorm2D)
             else:
                 the shortcut layer should be an no-op
-
         All conv layers will have a padding of 1 and no bias term. To facilitate this, consider using
         the provided conv() helper function.
         When performing a forward pass, the ReLU activation should be applied after the first batchnorm layer
         and after the second batchnorm gets added to the shortcut.
         """
         ## YOUR CODE HERE
-
         ## Initialize the block with a call to super and make your conv and batchnorm layers.
         super(ResNetBlock, self).__init__()
         # TODO: Initialize conv and batch norm layers with the correct parameters
-        self.relu = nn.ReLU()
-        # First convolutional layer
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size= 3, stride=stride, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels)
-
-        # Second convolutional layer
+        self.relu = nn.ReLU()
         self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_channels)
-
         ## Use some conditional logic when defining your shortcut layer
         ## For a no-op layer, consider creating an empty nn.Sequential()
         self.shortcut = None  # ???
         # TODO: Code here to initialize the shortcut layer
-        # Shortcut layer
         if stride != 1 or in_channels != out_channels:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size = 1, stride = stride, bias=False),
-                nn.BatchNorm2d(out_channels)
-            )
+                    nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False),
+                    nn.BatchNorm2d(out_channels))
         else:
             self.shortcut = nn.Sequential()
         ## END YOUR CODE
-
     def forward(self, x):
         """
         Compute a forward pass of this batch of data on this residual block.
-
         x: batch of images of shape (batch_size, num_channels, width, height)
         returns: result of passing x through this block
         """
         ## YOUR CODE HERE
         ## TODO: Call the first convolution, batchnorm, and activation
-
-        ## TODO: Call the second convolution and batchnorm
-
-        ## TODO: Also call the shortcut layer on the original input
-
-        ## TODO: Sum the result of the shortcut and the result of the second batchnorm
-        ## and apply your activation
-
-        # return out
-        out = self.relu(self.bn1(self.conv1(x)))
-        out = self.bn2(self.conv2(out))
-        out += self.shortcut(x)
+        out = self.conv1(x)
+        out = self.bn1(out)
         out = self.relu(out)
+        ## TODO: Call the second convolution and batchnorm
+        out = self.conv2(out)
+        out = self.bn2(out)
+        ## TODO: Also call the shortcut layer on the original input
+        shortcut = self.shortcut(x)
+        ## TODO: Sum the result of the shortcut and the result of the second batchnorm
+        out += shortcut
+        ## and apply your activation
+        out = self.relu(out)
+        # return out
         return out
         ## END YOUR CODE
-        #pass  # Remove this line when you implement this function
-
-
+        # Remove this line when you implement this function
 class ResNet18(nn.Module):
     def __init__(self, num_classes=200):
-        #Read the following, and uncomment it when you understand it, no need to add more code
+        # Read the following, and uncomment it when you understand it, no need to add more code
         num_classes = num_classes
         super(ResNet18, self).__init__()
         self.in_channels = 64
@@ -109,19 +95,17 @@ class ResNet18(nn.Module):
         self.layer3 = self.make_block(out_channels=256, stride=2)
         self.layer4 = self.make_block(out_channels=512, stride=2)
         self.linear = nn.Linear(512, num_classes)
-   
-
+         # Remove this line when you uncomment the above code
     def make_block(self, out_channels, stride):
-       #Read the following, and uncomment it when you understand it, no need to add more code
+        # Read the following, and uncomment it when you understand it, no need to add more code
         layers = []
         for stride in [stride, 1]:
             layers.append(ResNetBlock(self.in_channels, out_channels, stride))
             self.in_channels = out_channels
         return nn.Sequential(*layers)
-        #pass  # Remove this line when you uncomment the above code
-
+         # Remove this line when you uncomment the above code
     def forward(self, x):
-        #Read the following, and uncomment it when you understand it, no need to add more code
+        # Read the following, and uncomment it when you understand it, no need to add more code
         x = F.relu(self.bn1(self.conv1(x)))
         x = self.layer1(x)
         x = self.layer2(x)
@@ -131,4 +115,4 @@ class ResNet18(nn.Module):
         x = torch.flatten(x, 1)
         x = self.linear(x)
         return x
-        #pass  # Remove this line when you uncomment the above code
+         # Remove this line when you uncomment the above code
